@@ -17,9 +17,9 @@ $ npm install async-thread-worker
 
 Here's a basic example of implementing a worker (abstracted as `thread`) and interacting with it.
 Use [`sendRequest()`](#sendRequest) and [`sendResponse()`](#sendResponse) for client-server style communications.
-[ [demo]() | [source]() ]
+[ [demo](https://w3reality.github.io/async-thread-worker/examples/simple/index.html) | [source](https://github.com/w3reality/async-thread-worker/tree/master/examples/simple) ]
 
-[*index.html*](): Synchronously sending requests to a worker.
+[*index.html*](https://github.com/w3reality/async-thread-worker/blob/master/examples/simple/index.html): Synchronously sending requests to a worker.
 ```js
 // <script src='async-thread-worker.min.js'></script>
 
@@ -31,7 +31,7 @@ for (let payload of ['a', 'b', 'c', 'd']) {
 }
 ```
 
-[*my-thread-worker.js*](): Implementation of the worker.  Use the provided `id` to respond to a request.
+[*my-thread-worker.js*](https://github.com/w3reality/async-thread-worker/blob/master/examples/simple/my-thread-worker.js): Implementation of the worker.  Use the provided `id` to respond to a request.
 ```js
 importScripts('async-thread-worker.min.js');
 
@@ -58,13 +58,13 @@ The results in the developer console:
 
 ## Examples
 
-- **simple** - Basic client-server communications with a worker. [ [live]() | [source]() | [howto](#usage) ]
-- **simple-node** - NodeJs version of the above example.
-- **tasks** - Delegating various tasks to a worker (calculator).  This example also demonstrates error handling with `try/catch` and the [`sendError()`](#sendError) API.
-- **serial-vs-parallel** - Running multiple workers serially/parallelly.
-- **transferables** - Transfering an [`ArrayBuffer`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/ArrayBuffer) object back and forth for efficient drawing.  The [`sendRequest()`](#sendRequest) and [`sendResponse()`](#sendResponse) APIs support [transferable objects](https://developers.google.com/web/updates/2011/12/Transferable-Objects-Lightning-Fast).
-- **class-sharing** - Passing a JavaScript class to a worker.
-- **wasm-ffmpeg** - webm/mp4 encoder app inspired by ["Running FFMPEG with WASM in a Web Worker"](https://paul.kinlan.me/running-ffmpeg-with-wasm-in-a-web-worker/).  In this app, we use `async-thread-worker` instead of [Comlink](https://github.com/GoogleChromeLabs/comlink) in order to control encoder threads in more client-server oriented style.
+- **simple** - Basic client-server communications with a worker. [ [live](https://w3reality.github.io/async-thread-worker/examples/simple/index.html) | [source](https://github.com/w3reality/async-thread-worker/tree/master/examples/simple) | [howto](#usage) ]
+- **simple-node** - NodeJs version of the above example. [ WIP ]
+- **tasks** - Delegating various tasks to a worker (calculator).  This example also demonstrates error handling with `try/catch` and the [`sendError()`](#sendError) API. [ [live](https://w3reality.github.io/async-thread-worker/examples/tasks/index.html) | [source](https://github.com/w3reality/async-thread-worker/tree/master/examples/tasks) ]
+- **serial-vs-parallel** - Running multiple workers serially/parallelly. [ [live](https://w3reality.github.io/async-thread-worker/examples/serial-vs-parallel/index.html) | [source](https://github.com/w3reality/async-thread-worker/tree/master/examples/serial-vs-parallel) ]
+- **transferables** - Transfering an [`ArrayBuffer`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/ArrayBuffer) object back and forth for efficient drawing.  The [`sendRequest()`](#sendRequest) and [`sendResponse()`](#sendResponse) APIs support [transferable objects](https://developers.google.com/web/updates/2011/12/Transferable-Objects-Lightning-Fast). [ [live](https://w3reality.github.io/async-thread-worker/examples/transferables/index.html) | [source](https://github.com/w3reality/async-thread-worker/tree/master/examples/transferables) ]
+- **class-sharing** - Passing a JavaScript class to a worker. [ [live](https://w3reality.github.io/async-thread-worker/examples/class-sharing/index.html) | [source](https://github.com/w3reality/async-thread-worker/tree/master/examples/class-sharing) ]
+- **wasm-ffmpeg** - webm/mp4 encoder app inspired by ["Running FFMPEG with WASM in a Web Worker"](https://paul.kinlan.me/running-ffmpeg-with-wasm-in-a-web-worker/).  In this app, we use `async-thread-worker` instead of [Comlink](https://github.com/GoogleChromeLabs/comlink) in order to control encoder threads in more client-server oriented style. [ [live](https://w3reality.github.io/async-thread-worker/examples/wasm-ffmpeg/index.html) | [source](https://github.com/w3reality/async-thread-worker/tree/master/examples/wasm-ffmpeg) ] WIP
 
 ## API
 
