@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-type" content="text/html; charset=utf-8"/>
+    <title></title>
+</head>
+<body>
+    <h3>class-sharing</h3>
+    <p>Passing a JavaScript class to a worker.</p>
+    <p>💡 Open the developer console to see the results.</p>
+
+    <script src='../../dist/async-thread-worker.min.js'></script>
+    <script>
+        class Adder {
+            add(a, b) { return a + b; }
+        }
+
+        const th = new AsyncThreadWorker.Thread('./my-thread-worker.js');
+        const objectURL = URL.createObjectURL(
+            new Blob([Adder.toString()], {type: 'text/javascript'}));
+
+        (async () => {
+            let result = await th.sendRequest({task: 'import', data: objectURL});
+            console.log('result:', result);
+
+            result = await th.sendRequest({task: 'test', data: {a: 1, b: 2}});
+            console.log('result:', result);
+
+            th.terminate();
+        })();
+    </script>
+</body>
+</html>

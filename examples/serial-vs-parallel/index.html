@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-type" content="text/html; charset=utf-8"/>
+    <title></title>
+</head>
+<body>
+    <h3>serial-vs-parallel</h3>
+    <p>Running multiple workers serially/parallelly.</p>
+    <p>💡 Open the developer console to see the results.</p>
+
+    <script src='../../dist/async-thread-worker.min.js'></script>
+    <script>
+    const numThreads = 3;
+    const threads = [];
+
+    for (let i = 0; i < numThreads; i++) {
+        threads.push(new AsyncThreadWorker.Thread('./my-thread-worker.js'));
+    }
+    console.log(`==== ${numThreads} threads created ====`);
+
+    (async () => {
+        console.log(`==== running the threads serially ====`);
+        for (let th of threads) {
+            const ret = await th.sendRequest({task: 'run', sec: 2});
+            console.log('ret:', ret);
+        }
+
+        console.log(`==== running the threads parallelly ====`);
+        const f = async th => {
+            const ret = await th.sendRequest({task: 'run', sec: 2});
+            console.log('ret:', ret);
+        };
+        for (let th of threads) f(th)
+
+    })();
+    </script>
+</body>
+</html>

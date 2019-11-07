@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-type" content="text/html; charset=utf-8"/>
+    <title></title>
+</head>
+<body>
+    <h3>simple</h3>
+    <p>Client-server communication with a worker.</p>
+    <p>💡 Open the developer console to see the results.</p>
+
+    <script src='../../dist/async-thread-worker.min.js'></script>
+    <script>
+    const thread = new AsyncThreadWorker.Thread('./my-thread-worker.js');
+
+    (async () => {
+        for (let payload of ['a', 'b', 'c', 'd']) {
+            const response = await thread.sendRequest(payload);
+            console.log('[main] got response:', response);
+        }
+
+        thread.terminate();
+    })();
+    </script>
+</body>
+</html>

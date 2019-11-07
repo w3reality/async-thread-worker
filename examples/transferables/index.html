@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-type" content="text/html; charset=utf-8"/>
+    <title></title>
+</head>
+<body>
+    <h3>transferables</h3>
+    <p>Transfering an <code>ArrayBuffer</code> back and forth for efficient drawing.</p>
+    <p>💡 Open the developer console to see the results.</p>
+
+    <canvas id="canvas" height="512" width="512"></canvas>
+
+    <script src='../../dist/async-thread-worker.min.js'></script>
+    <script>
+        const canv = document.getElementById("canvas");
+        const ctx = canv.getContext('2d');
+        const shape = [canv.width, canv.height, 4];
+        const ab = new ArrayBuffer(shape[0] * shape[1] * shape[2]);
+
+        (async () => {
+            const th = new AsyncThreadWorker.Thread('./my-thread-worker.js');
+
+            const ret = await th.sendRequest(
+                {task: 'draw', data: ab}, [ab]); // [transferables]
+            console.log('ret:', ret); // updated ArrayBuffer by the worker
+
+            const view = new Uint8ClampedArray(ret);
+            console.log('view:', view);
+            ctx.putImageData(new ImageData(view, shape[0], shape[1]), 0, 0);
+
+            th.terminate();
+        })();
+    </script>
+</body>
+</html>

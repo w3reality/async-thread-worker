@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-type" content="text/html; charset=utf-8"/>
+    <title></title>
+</head>
+<body>
+    <h3>tasks</h3>
+    <p>Delegating tasks to a worker (calculator).</p>
+    <p>💡 Open the developer console to see the results.</p>
+
+    <script src='../../dist/async-thread-worker.min.js'></script>
+    <script type='module'>
+    //import AsyncThreadWorker from '../../dist/async-thread-worker.esm.js';
+
+
+    const thread = new AsyncThreadWorker.Thread('./my-thread-worker.js');
+
+    (async () => {
+        let ans = await thread.sendRequest({task: 'add', a: 1, b: 2});
+        console.log('ans:', ans);
+
+        ans = await thread.sendRequest({task: 'sub', a: 1, b: 2});
+        console.log('ans:', ans);
+
+        ans = await thread.sendRequest({task: 'mul', a: 1, b: 2});
+        console.log('ans:', ans);
+
+        ans = await thread.sendRequest({task: 'div', a: 1, b: 2});
+        console.log('ans:', ans);
+
+        try {
+            ans = await thread.sendRequest({task: 'div', a: 1, b: 0});
+            console.log('ans:', ans);
+        } catch (error) {
+            console.log('error:', error);
+        }
+
+        thread.terminate();
+    })();
+    </script>
+</body>
+</html>
