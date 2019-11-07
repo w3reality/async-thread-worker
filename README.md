@@ -19,7 +19,7 @@ Here's a basic example of implementing a worker (abstracted as `thread`) and int
 Use [`sendRequest()`](#sendRequest) and [`sendResponse()`](#sendResponse) for client-server style communications.
 [ [demo](https://w3reality.github.io/async-thread-worker/examples/simple/index.html) | [source](https://github.com/w3reality/async-thread-worker/tree/master/examples/simple) ]
 
-[*index.html*](): Synchronously sending requests to a worker.
+[*index.html*](https://github.com/w3reality/async-thread-worker/blob/master/examples/simple/index.html): Synchronously sending requests to a worker.
 ```js
 // <script src='async-thread-worker.min.js'></script>
 
@@ -31,7 +31,7 @@ for (let payload of ['a', 'b', 'c', 'd']) {
 }
 ```
 
-[*my-thread-worker.js*](): Implementation of the worker.  Use the provided `id` to respond to a request.
+[*my-thread-worker.js*](https://github.com/w3reality/async-thread-worker/blob/master/examples/simple/my-thread-worker.js): Implementation of the worker.  Use the provided `id` to respond to a request.
 ```js
 importScripts('async-thread-worker.min.js');
 
