@@ -71,48 +71,48 @@ The results in the developer console:
 ### `AsyncThreadWorker.Thread`
 The `Thread` class is for abstraction of the main thread's side (*client*).
 
-- `constructor(path)`
+- **`constructor(path)`**
 Creates a `Thread` object that is a worker's interface.  The underlying Web Worker object wrapped by `Thread` is also created based on its implementation specified by `path`.
     - `path` **string** The path to a worker's implementation.
 
-- <a name="sendRequest"></a>`sendRequest(payload=undefined, transferables=[])`
+- <a name="sendRequest"></a>**`sendRequest(payload=undefined, transferables=[])`**
 Sends a request to the worker (*server*) with data `payload`.  [Transferable objects](https://developer.mozilla.org/en-US/docs/Web/API/Transferable) can be specified in the optional `transferbles` array so that they are efficiently sent to the other thread without memory copying.
 Returns a promise corresponding to the server's action ([`sendResponse()`](#sendResponse) or [`sendError()`](#sendError)).
     - `payload` **object | primitive** e.g. `42`, or `{name: 'foo', input: buf}`, where `buf` is an `ArrayBuffer`.
     - `transferables` **Array\<object\>** e.g. `[buf,]`
 
-- `getWorker()`
+- **`getWorker()`**
 Returns the raw Web Worker object wrapped by `Thread` (or `null` if the worker is already terminated).
 
-- `terminate()`
+- **`terminate()`**
 Immediately terminates the worker (internally using [`Worker.terminate()`](https://developer.mozilla.org/en-US/docs/Web/API/Worker/terminate)).
 
 ### `AsyncThreadWorker.ThreadWorker`
 The `ThreadWorker` class is for abstraction of the worker's side (*server*).
 
-- `constructor(self, opts={})`
+- **`constructor(self, opts={})`**
 Creates a `ThreadWorker` object that represents the worker thread by wrapping
  the bare Web Worker object (`self`).
     - `self` [**DedicatedWorkerGlobalScope**](https://developer.mozilla.org/en-US/docs/Web/API/DedicatedWorkerGlobalScope) The Web Worker object to be wrapped.
     - `opts` **object** Optional data that can be passed to [`onCreate(opts)`](#onCreate).
 
-- <a name="onRequest"></a>`onRequest(id, payload)`
+- <a name="onRequest"></a>**`onRequest(id, payload)`**
 Called when the worker thread (*server*) received a request with data `payload` from the main thread (*client*).  Implement this method to respond to the client by either [`sendResponse()`](#sendResponse) or [`sendError()`](#sendError)
     - `id` **string** An auto-generated request id to be required by [`sendResponse()`](#sendResponse) or [`sendError()`](#sendError).
     - `payload` **object | primitive**
 
-- <a name="sendResponse"></a>`sendResponse(id, payload=undefined, transferables=[])`
+- <a name="sendResponse"></a>**`sendResponse(id, payload=undefined, transferables=[])`**
 Sends a response to the main thread (*client*) with data `payload`.  [Transferable objects](https://developer.mozilla.org/en-US/docs/Web/API/Transferable) can be specified in the optional `transferbles` array so that they are efficiently sent to the other thread without memory copying.
     - `id` **string** A request id provided by [`onRequest()`](#onRequest).
     - `payload` **object | primitive** e.g. `42`, or `{name: 'foo', output: buf}`, where `buf` is an `ArrayBuffer`.
     - `transferables` **Array\<object\>** e.g. `[buf,]`
 
-- <a name="sendError"></a>`sendError(id, error)`
+- <a name="sendError"></a>**`sendError(id, error)`**
 Sends an error response to the main thread (*client*) with data `error`.
     - `id` **string** A request id provided by [`onRequest()`](#onRequest).
     - `error` **object | primitive**
 
-- <a name="onCreate"></a>`onCreate(opts)`
+- <a name="onCreate"></a>**`onCreate(opts)`**
 Called when the `ThreadWorker` is created.  One may override this method when extending the `ThreadWorker` class.
     - `opts` **object** Optional parameters given to `constructor()`.
 
