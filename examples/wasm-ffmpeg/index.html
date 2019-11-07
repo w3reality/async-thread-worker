@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-type" content="text/html; charset=utf-8"/>
+    <title></title>
+
+    <!-- Latest compiled and minified CSS -->
+    <!--<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha384-HSMxcRTRxnN+Bdg0JdbxYKrThecOKuH5zCYotlSAcp1+c8xmyTe9GYg1l9a69psu" crossorigin="anonymous">-->
+    <link rel="stylesheet" href="./bootstrap.min.css">
+</head>
+<body style="padding: 8px;">
+    <h3>in-browser mp4/webm encoder powered by ffmpeg-*.wasm</h3>
+    <p>
+        <a href="https://github.com/w3reality/async-thread-worker/tree/master/examples/wasm-ffmpeg">source code</a>
+    </p>
+    <hr />
+    <div class="row">
+        <div class="col-sm-6">
+            <div>
+                <div>
+                    <!--
+                        radios - https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/radio
+                        input - https://stackoverflow.com/questions/19107685/safari-input-type-file-accept-video-ignores-mp4-files
+                    -->
+                    encode: [ <input style="display: inline;" id=input type=file accept="video/mp4,video/x-m4v,video/*"> ] => output.
+                    [
+                        <input type="radio" id="outputChoice1" name="output" value="mp4" checked>
+                        <label for="outputChoice1">mp4</label>
+
+                        <input type="radio" id="outputChoice2" name="output" value="webm">
+                        <label for="outputChoice2">webm</label>
+                    ]
+                </div>
+                <div>
+                    <button id="startButton">Start</button>
+                    <button id="estimateButton">Estimate</button>
+                </div>
+            </div>
+            <hr />
+            <div>
+                developer: <button id="testButton">Convert test.webm (385 KB)</button>
+                <button id="devVersionButton"><code>ffmpeg -version</code></button>
+                <button id="devHelpButton"><code>ffmpeg -help</code></button>
+                <button id="devClearButton">Clear</button>
+            </div>
+            <hr />
+            <div id="cancel" style="display: none">
+                ⌛ Encoding... <button id="cancelButton">Cancel</button>
+            </div>
+            <div id="video" style="display: none">
+                <div>
+                    <video id=output autoplay style="width: 100%;" controls></video>
+                </div>
+                <div>
+                    <span id="outputName"></span> <button id="downloadButton">Save</button>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <pre id="log" style="font-size: 11px; white-space: pre-wrap; overflow-y: scroll; width: 100%; height: 500px; background-color: #222222; color: #cccccc;"></pre>
+        </div>
+    </div>
+
+    <script src='../../dist/async-thread-worker.min.js'></script>
+    <script type='module'>
+    // import AsyncThreadWorker from '../../lib/async-thread-worker.esm.js';
+
+    class Log {
+        constructor(id) {
+            this._log = document.getElementById('log');
+        }
+        clear() {
+            const parent = this._log;
+            while (parent.firstChild) {
+                parent.firstChild.remove();
+            }
+        }
+        append(str, color=null, escape=true) {
+            const span = document.createElement('span');
+            // span.setAttribute('class', 'sr-only');
+            if (color) span.style.color = color;
+            if (escape) {
+                span.textContent = str;
+            } else {
+                span.innerHTML = str;
+            }
+
+            this._log.appendChild(span);
+        }
+        scrollToBottom() {
+            // https://stackoverflow.com/a/33193694
+            this._log.scrollTop = this._log.scrollHeight - this._log.clientHeight;
+        }
+    }
+
+    class App {
+        constructor() {
+            this.thread = null; // to be initialized by onOutputChoiceChanged()
+
+            // [run] ffmpeg -y -i test.webm output.mp4
+            // Stream mapping:
+            //   Stream #0:0 -> #0:0 (vp8 (native) -> h264 (libx264))
+            //   Stream #0:1 -> #0:1 (vorbis (native) -> aac (native))
+
+            // [run] ffmpeg -y -i test.webm output.webm
+            // Stream mapping:
+            //   Stream #0:0 -> #0:0 (vp8 (native) -> vp8 (libvpx))
+            //   Stream #0:1 -> #0:1 (vorbis (native) -> opus (libopus))
+
+            this.initUI();
+        }
+
+        resetThread(type) {
+            if (this.thread) {
+                this.thread.terminate();
+                this.appendStr(`[info] an old thread terminated 😇`);
+            }
+
+            this.thread = App.createThread(type);
+            this.appendStr(`[info] a new ${type}-encoder thread created and ready 😀`);
+        }
+        static createThread(type) {
+            return new AsyncThreadWorker.Thread(`./ffmpeg-${type}-worker.js`);
+        }
+
+        static createVideo(buf) {
+            const view = new Uint8ClampedArray(buf);
+            console.log('view.length:', view.length);
+            // FIXME safari not playing mp4/webm in case of the local server??
+            return URL.createObjectURL(new Blob([view]));
+        }
+
+        appendStr(str, color='cyan') {
+            this.log.append(str, color);
+            this.log.append('<br />', null, false);
+            this.log.scrollToBottom();
+        }
+        onOutputChoiceChanged(value) {
+            console.log('onOutputChoiceChanged(): value:', value);
+            this.appendStr(`[info] switching to ffmpeg-${value}.wasm`);
+
+            this.resetThread(value);
+        }
+
+        toggleCancelUI(tf) {
+            if (tf) {
+                this.buttons['cancelButton'].disabled = false;
+                this.cancelDiv.style.display = 'inherit';
+            } else {
+                this.buttons['cancelButton'].disabled = true;
+                this.cancelDiv.style.display = 'none';
+            }
+        }
+        updateUI() {
+            this.toggleCancelUI(false); // default
+
+            this.buttons['startButton'].disabled = !this.fileChosen;
+            this.buttons['estimateButton'].disabled = !this.fileChosen;
+
+            const hasVideoSrc = this._videoSrc !== '';
+            this.videoDiv.style.display = hasVideoSrc ? 'inherit' : 'none';
+            this.buttons['downloadButton'].disabled = !hasVideoSrc;
+            this.outputName.textContent = `output.${this.outputChoice}`;
+        }
+
+        static downloadDataURL(dataURL, filename) {
+            const a = document.createElement('a');
+            a.href = dataURL;
+            a.download = filename;
+            a.style.display = 'none';
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+        }
+        updateVideo(src) {
+            this._videoSrc = src;
+
+            // `this.output.src = '';` has been found troublesome...
+            // https://humanwhocodes.com/blog/2009/11/30/empty-image-src-can-destroy-your-site/
+            // https://stackoverflow.com/questions/13726593/how-to-set-image-src-to-empty
+
+            // workaround
+            // https://stackoverflow.com/questions/3258587/how-to-properly-unload-destroy-a-video-element
+            this.output.pause();
+            if (src !== '') {
+                this.output.setAttribute('src', src);
+            } else {
+                this.output.removeAttribute('src'); // empty source
+            }
+            this.output.load();
+
+            this.updateUI();
+        }
+
+        toggleLockUI(tf) {
+            this.input.disabled = tf;
+            for (let radio of Object.values(this.radios)) {
+                radio.disabled = tf;
+            }
+            for (let btn of Object.values(this.buttons)) {
+                btn.disabled = tf;
+            }
+        }
+        initUI() {
+            this.log = new Log('log');
+
+            this.outputChoice = 'mp4'; // default
+            this.onOutputChoiceChanged('mp4'); // first time
+
+            this.radios = {
+                outputChoice1: document.getElementById('outputChoice1'),
+                outputChoice2: document.getElementById('outputChoice2'),
+            };
+            for (let el of Object.values(this.radios)) {
+                el.addEventListener('click', e => {
+                    const val = el.value;
+                    if (val !== this.outputChoice) {
+                        this.outputChoice = val;
+                        this.onOutputChoiceChanged(val);
+                    }
+                });
+            }
+
+            this.buttons = [
+                'startButton', 'estimateButton',
+                'testButton', 'devVersionButton', 'devHelpButton', 'devClearButton',
+                'cancelButton', 'downloadButton',
+            ].reduce((acc, id) => {
+                acc[id] = document.getElementById(id);
+                return acc;
+            }, {});
+
+            const _handleEncode = async (fname, getBuf, estimate) => {
+                this.updateVideo('');
+                this.toggleLockUI(true);
+
+                this.toggleCancelUI(true);
+                await this.runEncode(fname, await getBuf(), estimate);
+
+                this.toggleLockUI(false);
+                this.updateUI();
+            };
+            this.buttons['startButton'].addEventListener('click', async e => {
+                const file = this.fileChosen;
+                _handleEncode(file.name,
+                    async () => await new Response(file).arrayBuffer(), false);
+            });
+            this.buttons['estimateButton'].addEventListener('click', async e => {
+                const file = this.fileChosen;
+                _handleEncode(file.name,
+                    async () => await new Response(file).arrayBuffer(), true);
+            });
+            this.buttons['testButton'].addEventListener('click', async e => {
+                const estimate = false; // output.mp4; 32.72 s
+                // const estimate = true; // output.mp4; 32.03 s (for * 1.3)
+
+                const fname = 'test.webm';
+                this.appendStr(`[info] fetching ${fname}`);
+
+                _handleEncode(fname, async () => {
+                    const resp = await fetch(`./test/${fname}`); // vp8 / vorbis
+                    //-------- some random experiments...
+                    // const resp = await fetch(`./test2/ev.mkv`); // h264 / opus
+                    // const resp = await fetch(`./test2/flow.mkv`); // h264 / opus
+                    // const resp = await fetch(`./test2/hdd.flv`); // flv1 / mp3 -- No decoder for stream #0:1, filtering impossible
+                    // const resp = await fetch(`./test2/fish.mov`); // mjpeg -- no output available
+                    // const resp = await fetch(`./test2/hello.mov`); // h264 -- no output available
+                    //--------
+                    // https://unix.stackexchange.com/questions/40638/how-to-do-i-convert-an-animated-gif-to-an-mp4-or-mv4-on-the-command-line
+                    // $ ffmpeg -i giphy.gif -movflags faststart -pix_fmt yuv420p -vf "scale=trunc(iw/2)*2:trunc(ih/2)*2" giphy.mp4
+                    // const resp = await fetch(`./test2/giphy.gif`); // Invalid data found when processing input; no output available
+                    // const resp = await fetch(`./test2/giphy.mp4`); // ok
+                    //--------
+                    return await resp.arrayBuffer();
+                }, estimate);
+            });
+
+            this.buttons['devVersionButton'].addEventListener('click', async e => {
+                this.toggleLockUI(true);
+                await this.runVerOrHelp('version');
+                this.toggleLockUI(false);
+                this.updateUI();
+            });
+            this.buttons['devHelpButton'].addEventListener('click', async e => {
+                this.toggleLockUI(true);
+                await this.runVerOrHelp('help');
+                this.toggleLockUI(false);
+                this.updateUI();
+            });
+
+            this.buttons['devClearButton'].addEventListener('click', e => {
+                // clear video
+                this.updateVideo('');
+
+                // clear log
+                this.log.clear();
+                this.appendStr(`[info] log cleared`);
+            });
+
+            this.buttons['cancelButton'].addEventListener('click', e => {
+                this.resetThread(this.outputChoice);
+
+                this.toggleLockUI(false);
+                this.updateUI();
+            });
+
+            this.buttons['downloadButton'].addEventListener('click', e => {
+                if (this._videoSrc !== '') {
+                    App.downloadDataURL(this._videoSrc,
+                        this.outputName.textContent);
+                }
+            });
+
+            // video input UI
+            this.input = input; // via id=input
+            this.fileChosen = null;
+            this.input.onchange = ev => {
+                this.fileChosen = ev.target.files[0];
+                this.updateUI();
+            };
+
+            // cancel UI
+            this.cancelDiv = document.getElementById('cancel');
+
+            // video output UI
+            this.output = output; // via id=output
+            this.outputName = document.getElementById('outputName');
+            this.videoDiv = document.getElementById('video');
+            this._videoSrc = '';
+
+            // first time
+            this.updateUI();
+        } // end initUI()
+
+        async runVerOrHelp(what) {
+            if (what !== 'version' && what !== 'help') return;
+            this.appendStr(`[run] ffmpeg -${what}`);
+
+            const { sec, stdout } = await this.thread.sendRequest({task: what});
+
+            this.appendStr(stdout, null);
+            this.appendStr(`[info] done in ${sec.toFixed(2)} seconds`);
+        }
+
+        async runEncode(fname, buf, estimate=false) {
+            const mode = estimate ? 'estimation mode' : 'full length mode';
+
+            let ratio = -1;
+            if (estimate) {
+                [buf, ratio] = App._createTruncatedBuffer(buf);
+                // alert(`ratio: ${ratio}`)
+                this.appendStr(`[info] (${mode}) buffer truncated to ${buf.byteLength} bytes (ratio: ${ratio.toFixed(3)})`);
+            }
+
+            this.appendStr(`[run] ffmpeg -y -i ${fname} output.${this.outputChoice}`);
+
+            const ret = await this._encode(fname, buf, estimate);
+
+            if (ret.err) {
+                this.appendStr(`[info] encoding failed with error: ${ret.err}`);
+            } else {
+                console.log('ret.buf:', ret.buf);
+                this.updateVideo(ret.buf ? App.createVideo(ret.buf) : '');
+
+                const { sec, stdout, stderr } = ret;
+                // this.appendStr(`[stdout] ${stdout}`); // empty
+                this.appendStr(stderr, null);
+                this.appendStr(`[info] (${mode}) done in ${sec.toFixed(2)} seconds`);
+                if (estimate && ret.buf.byteLength > 0) {
+                    const fuzzy = 1.5;
+                    this.appendStr(`[info] estimation for encoding full length: ${(sec / ratio * fuzzy).toFixed(0)} seconds`);
+                }
+            }
+        }
+        async _encode(fname, bufIn) {
+            try {
+                const ret = await this.thread.sendRequest({
+                    task: 'encode',
+                    nameIn: fname,
+                    bufIn: bufIn,
+                }, [bufIn]);
+
+                const { buf, sec } = ret;
+                console.log('buf.byteLength:', buf.byteLength);
+                console.log('sec:', sec);
+                return ret;
+            } catch (err) {
+                console.log('err:', err);
+                return { err };
+            }
+        }
+        static _createTruncatedBuffer(buf, byteLength=160000) {
+            const origLen = buf.byteLength;
+            const view = new Uint8ClampedArray(buf);
+            const arr = new Uint8ClampedArray(
+                byteLength < origLen ? byteLength : origLen);
+
+            let count = 0;
+            for (let idx = 0; idx < origLen && idx < byteLength; idx++) {
+                arr[idx] = view[idx];
+                count++;
+            }
+            console.log('[truncate] count, origLen:', count, origLen);
+            return [arr.buffer, count / origLen];
+        }
+    } // end class App
+
+    const _app = new App();
+
+    </script>
+</body>
+</html>
