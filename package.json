@@ -1,0 +1,47 @@
+{
+    "name": "async-thread-worker",
+    "version": "0.9.1",
+    "description": "async/await abstraction for Web Workers",
+    "main": "src/index.js",
+    "directories": {
+        "example": "examples"
+    },
+    "scripts": {
+        "dist": "npm run build && npm run build:esm && mkdir -p ./dist && cp ./lib/*.js ./dist/",
+        "build": "webpack --mode production --modtype umd",
+        "build:esm": "webpack --mode production --modtype esm",
+        "build:esm:compat": "webpack --mode production --modtype esm:compat",
+        "dev": "webpack --mode development --progress --colors --watch --modtype dev"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/w3reality/async-thread-worker.git"
+    },
+    "keywords": [
+        "async/await",
+        "thread",
+        "Web Worker"
+    ],
+    "author": "j-devel",
+    "license": "MIT",
+    "bugs": {
+        "url": "https://github.com/w3reality/async-thread-worker/issues"
+    },
+    "homepage": "https://github.com/w3reality/async-thread-worker",
+    "dependencies": {},
+    "devDependencies": {
+        "@babel/core": "^7.5.5",
+        "@babel/preset-env": "^7.5.5",
+        "babel-eslint": "^9.0.0",
+        "babel-loader": "^8.0.6",
+        "babel-plugin-add-module-exports": "^0.2.1",
+        "eslint": "^6.2.2",
+        "eslint-loader": "^3.0.0",
+        "regenerator": "^0.14.2",
+        "uglifyjs-webpack-plugin": "^2.2.0",
+        "webpack": "^4.33.0",
+        "webpack-cli": "^3.3.9",
+        "webpack-var2esm-plugin": "^1.2.1",
+        "yargs": "^10.0.3"
+    }
+}
