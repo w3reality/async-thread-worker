@@ -9,7 +9,7 @@
 
 `async-thread-worker` presents an abstraction of Web Worker thread communication based on the client-server model. Supported features are:
 
-- `Promise` handling with `async/await`,
+- `await`ing thread operations,
 - integration of basic Web Worker methods (passing transferable objects, the `terminate()` method, etc.), and
 - class methods/interfaces for implementing client-server style functionality.
 
