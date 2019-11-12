@@ -1,8 +1,17 @@
 // async-thread-worker - https://github.com/w3reality/async-thread-worker
 // async/await abstraction for Web Workers (MIT License)
 
+const __version = "0.9.2dev";
+const __consoleLog = (...args) => {
+    const _console = console;
+    _console.log.apply(_console, args);
+};
+const __consoleVer = name => __consoleLog(`${name} ${__version}`);
+
 class ThreadWorker {
     constructor(self, opts={}) {
+        __consoleVer('AsyncThreadWorker.ThreadWorker');
+
         // https://developer.mozilla.org/en-US/docs/Web/API/WorkerGlobalScope/self
         this._worker = self;
         self.onmessage = e => this._onMessage(e);
@@ -41,6 +50,8 @@ class ThreadWorker {
 
 class Thread {
     constructor(path) {
+        __consoleVer('AsyncThreadWorker.Thread');
+
         const _worker = new Worker(path);
         this._worker = _worker;
 
