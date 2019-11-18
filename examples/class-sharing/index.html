@@ -16,11 +16,12 @@
         }
 
         const th = new AsyncThreadWorker.Thread('./my-thread-worker.js');
-        const objectURL = URL.createObjectURL(
+        const objectURL = window.URL.createObjectURL(
             new Blob([Adder.toString()], {type: 'text/javascript'}));
 
         (async () => {
             let result = await th.sendRequest({task: 'import', data: objectURL});
+            window.URL.revokeObjectURL(objectURL);
             console.log('result:', result);
 
             result = await th.sendRequest({task: 'test', data: {a: 1, b: 2}});
