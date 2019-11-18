@@ -1,9 +1,25 @@
 <div align="center">
   <h1><code>async-thread-worker</code></h1>
   <p>
-    <strong>async/await abstraction for <a href="https://developer.mozilla.org/en-US/docs/Web/API/Worker">Web Workers</a></strong>
+    <strong>An <code>async/await</code> abstraction for <a href="https://developer.mozilla.org/en-US/docs/Web/API/Worker">Web Workers</a></strong>
   </p>
 </div>
+
+## About
+
+`async-thread-worker` presents an abstraction of Web Worker thread communication based on the client-server model. Supported features are:
+
+- `await`ing thread operations,
+- integration of basic Web Worker methods (passing transferable objects, the `terminate()` method, etc.), and
+- class methods/interfaces for implementing client-server style functionality.
+
+After introducing basic examples for quickly getting started, we demonstrate two applications using WASM binaries (C code compiled by [Emscripten](https://github.com/emscripten-core/emscripten) and Rust code by [`wasm-pack`](https://github.com/rustwasm/wasm-pack)) embedded inside worker threads.
+
+For libraries that realize similar functionality, you might also consider:
+
+- [GoogleChromeLabs/comlink](https://github.com/GoogleChromeLabs/comlink)
+- [developit/greenlet](https://github.com/developit/greenlet)
+- [developit/workerize](https://github.com/developit/workerize)
 
 ## Getting Started
 
@@ -65,6 +81,7 @@ The results in the developer console:
 - **class-sharing** - Passing a JavaScript class to a worker. [ [live](https://w3reality.github.io/async-thread-worker/examples/class-sharing/index.html) | [source](https://github.com/w3reality/async-thread-worker/tree/master/examples/class-sharing) ]
 - **wasm-ffmpeg** - webm/mp4 encoder app inspired by ["Running FFMPEG with WASM in a Web Worker"](https://paul.kinlan.me/running-ffmpeg-with-wasm-in-a-web-worker/).  In this app, we use `async-thread-worker` instead of [Comlink](https://github.com/GoogleChromeLabs/comlink) in order to control encoder threads in more client-server oriented style. [ [live](https://w3reality.github.io/async-thread-worker/examples/wasm-ffmpeg/index.html) | [source](https://github.com/w3reality/async-thread-worker/tree/master/examples/wasm-ffmpeg) ]
 [![wasm-ffmpeg screenshot](./examples/wasm-ffmpeg/encoder-trim.png)](https://w3reality.github.io/async-thread-worker/examples/wasm-ffmpeg/index.html)
+- **rust-fern-bench** - WebVR app for benchmarking fractal computation with Rust+wasm vs JavaScript. [ [live](https://w3reality.github.io/threelet/examples/rust-fern-bench/index.html) | [source](https://github.com/w3reality/threelet/tree/master/examples/rust-fern-bench) ] 🔗
 
 ## API
 
