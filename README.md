@@ -10,12 +10,12 @@
 `async-thread-worker` presents an abstraction of Web Worker thread communication based on the client-server model. Supported features are:
 
 - `await`ing thread operations,
-- integration of basic Web Worker methods (passing transferable objects, the `terminate()` method, etc.), and
+- integration of basic Web Worker APIs (e.g. transferables, the `terminate()` method etc.), and
 - class methods/interfaces for implementing client-server style functionality.
 
-After introducing basic examples for quickly getting started, we demonstrate two applications using WASM binaries (C code compiled by [Emscripten](https://github.com/emscripten-core/emscripten) and Rust code by [`wasm-pack`](https://github.com/rustwasm/wasm-pack)) embedded inside worker threads.
+After introducing some basic examples for quickly getting started, we demonstrate applications using Wasm binaries (C code compiled by [Emscripten](https://github.com/emscripten-core/emscripten) and Rust code by [`wasm-pack`](https://github.com/rustwasm/wasm-pack)) embedded inside worker threads.
 
-For libraries that realize similar functionality, you might also consider:
+For other libraries that realize similar functionality, you might also consider:
 
 - [GoogleChromeLabs/comlink](https://github.com/GoogleChromeLabs/comlink)
 - [developit/greenlet](https://github.com/developit/greenlet)
@@ -93,7 +93,7 @@ Creates a `Thread` object that is a worker's interface.  The underlying Web Work
     - `path` **string** The path to a worker's implementation.
 
 - <a name="sendRequest"></a>**`sendRequest(payload=undefined, transferables=[])`**
-Sends a request to the worker (*server*) with data `payload`.  [Transferable objects](https://developer.mozilla.org/en-US/docs/Web/API/Transferable) can be specified in the optional `transferbles` array so that they are efficiently sent to the other thread without memory copying.
+Sends a request to the worker (*server*) with data `payload`.  [Transferable objects](https://developer.mozilla.org/en-US/docs/Web/API/Transferable) can be specified in the optional `transferbles` array so that they are efficiently sent to the other thread without [structured clone](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Structured_clone_algorithm).
 Returns a promise corresponding to the server's action ([`sendResponse()`](#sendResponse) or [`sendError()`](#sendError)).
     - `payload` **object | primitive** e.g. `42`, or `{name: 'foo', input: buf}`, where `buf` is an `ArrayBuffer`.
     - `transferables` **Array\<object\>** e.g. `[buf,]`
@@ -119,7 +119,7 @@ Called when the worker thread (*server*) received a request with data `payload` 
     - `payload` **object | primitive**
 
 - <a name="sendResponse"></a>**`sendResponse(id, payload=undefined, transferables=[])`**
-Sends a response to the main thread (*client*) with data `payload`.  [Transferable objects](https://developer.mozilla.org/en-US/docs/Web/API/Transferable) can be specified in the optional `transferbles` array so that they are efficiently sent to the other thread without memory copying.
+Sends a response to the main thread (*client*) with data `payload`.  [Transferable objects](https://developer.mozilla.org/en-US/docs/Web/API/Transferable) can be specified in the optional `transferbles` array so that they are efficiently sent to the other thread without [structured clone](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Structured_clone_algorithm).
     - `id` **string** A request id provided by [`onRequest()`](#onRequest).
     - `payload` **object | primitive** e.g. `42`, or `{name: 'foo', output: buf}`, where `buf` is an `ArrayBuffer`.
     - `transferables` **Array\<object\>** e.g. `[buf,]`
