@@ -11,3 +11,7 @@ that are included in this directory.  As such, the use of these four files shoul
 ### Credits
 
 Thanks [PaulKinlan](https://github.com/PaulKinlan), [Kagami](https://github.com/Kagami) and the FFmpeg developers for making this application possible.
+
+### Demo
+
+[![screenshot](./encoder-trim.png)](https://w3reality.github.io/async-thread-worker/examples/wasm-ffmpeg/index.html)
