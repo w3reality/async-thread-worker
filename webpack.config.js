@@ -1,5 +1,5 @@
 const path = require('path');
-const UglifyJSPlugin = require('uglifyjs-webpack-plugin');
+const TerserPlugin = require('terser-webpack-plugin');
 const Var2EsmPlugin = require('webpack-var2esm-plugin');
 
 const createConfig = (params) => {
@@ -43,8 +43,8 @@ const createConfig = (params) => {
         optimization: {
             minimize: minimize,
             minimizer: [
-                new UglifyJSPlugin({
-                    uglifyOptions: {
+                new TerserPlugin({
+                    terserOptions: {
                         compress: {
                             drop_console: true
                         }
