@@ -1,7 +1,7 @@
 // async-thread-worker - https://github.com/w3reality/async-thread-worker
 // async/await abstraction for Web Workers (MIT License)
 
-const __version = "0.9.2";
+const __version = "0.9.3dev";
 const __consoleLog = (...args) => {
     const _console = console;
     _console.log.apply(_console, args);
