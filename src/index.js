@@ -1,7 +1,7 @@
 // async-thread-worker - https://github.com/w3reality/async-thread-worker
 // async/await abstraction for Web Workers (MIT License)
 
-const __version = "0.9.2dev";
+const __version = "0.9.2";
 const __consoleLog = (...args) => {
     const _console = console;
     _console.log.apply(_console, args);
@@ -75,7 +75,7 @@ class Thread {
             }
         };
     }
-    _sendRequest(data, opts={}) { // returns a Promise object
+    _sendRequest(data, opts={}) {
         const defaults = {
             transferables: [],
         };
@@ -103,7 +103,21 @@ class Thread {
     getWorker() {
         return this._worker;
     }
+    _cancelPendingRequests() {
+        let count = 0;
+        Object.entries(this._rrRequest).forEach(([id, rr]) => {
+            rr.rej(`req[${id}] cenceled`);
+            delete this._rrRequest[id];
+            count += 1;
+        });
+        console.log(`_cancelPendingRequests(): canceled ${count} req(s)`);
+
+        if (Object.keys(this._rrRequest).length !== 0) {
+            throw 'panic: the rr map should have been cleared!';
+        }
+    }
     terminate() {
+        this._cancelPendingRequests();
         this._worker.terminate();
         this._worker = null;
     }

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-type" content="text/html; charset=utf-8"/>
+    <title>`terminate()` api example</title>
+</head>
+<body>
+    <h3>terminate</h3>
+    <p>`terminate()` api example. (<a href="https://github.com/w3reality/async-thread-worker/tree/master/examples/terminate">source code</a>)</p>
+    <p>💡 Open the developer console to see the results.</p>
+
+    <script src='../../dist/async-thread-worker.min.js'></script>
+    <!-- prod/dev -->
+    <script type="module">
+    // import AsyncThreadWorker from '../../src/index.js';
+
+    const numThreads = 2;
+    const threads = [];
+    for (let i = 0; i < numThreads; i++) {
+        threads.push(new AsyncThreadWorker.Thread('./my-thread-worker.js'));
+    }
+    console.log(`==== ${numThreads} threads created ====`);
+
+    (async () => { // main
+        if (1) {
+            setTimeout(() => {
+                for (let th of threads) {
+                    console.log('terminate!!');
+                    th.terminate();
+                }
+            }, 150);
+        }
+
+        for (let th of threads) { // parallel
+            (async () => {
+                // `th` is to be terminated ~ 150 ms later while running
+                try {
+                    const ret = await th.sendRequest({task: 'run', sec: 0.2});
+                    console.log('result: ok:', ret);
+                } catch (err) {
+                    console.log('result: err:', err);
+                }
+            })();
+        }
+    })();
+    </script>
+</body>
+</html>

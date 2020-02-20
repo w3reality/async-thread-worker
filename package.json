@@ -1,13 +1,13 @@
 {
     "name": "async-thread-worker",
-    "version": "0.9.1",
+    "version": "0.9.2",
     "description": "async/await abstraction for Web Workers",
     "main": "src/index.js",
     "directories": {
         "example": "examples"
     },
     "scripts": {
-        "dist": "npm run build && npm run build:esm && mkdir -p ./dist && cp ./lib/*{min,esm,compat}.js ./dist/",
+        "dist": "npm run build && npm run build:esm && npm run build:esm:compat && mkdir -p ./dist && cp ./lib/*{min,esm,compat}.js ./dist/",
         "build": "webpack --mode production --modtype umd",
         "build:esm": "webpack --mode production --modtype esm",
         "build:esm:compat": "webpack --mode production --modtype esm:compat",
