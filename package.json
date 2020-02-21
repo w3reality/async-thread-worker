@@ -39,7 +39,8 @@
         "eslint-loader": "^3.0.0",
         "regenerator": "^0.14.2",
         "terser-webpack-plugin": "^2.2.2",
-        "webpack": "^4.33.0",
+        "webpack": "^4.41.2",
+        "webpack-bundle-analyzer": "^3.3.2",
         "webpack-cli": "^3.3.9",
         "webpack-var2esm-plugin": "^1.2.1",
         "yargs": "^15.0.2"
