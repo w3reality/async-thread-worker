@@ -138,5 +138,5 @@ Called when the `ThreadWorker` is created.  One may override this method when ex
 
 ```
 $ npm install  # set up build tools
-$ npm run build  # generate module files in lib/
+$ npm run build  # generate module files in target/
 ```
