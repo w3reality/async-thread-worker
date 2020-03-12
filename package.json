@@ -1,6 +1,6 @@
 {
     "name": "async-thread-worker",
-    "version": "0.9.3-dev.3",
+    "version": "0.9.3-dev.4",
     "description": "async/await abstraction for Web Workers",
     "main": "dist/async-thread-worker.min.js",
     "directories": {
@@ -11,10 +11,9 @@
         "build": "es-pack build -m umd",
         "build:esm": "es-pack build -m esm",
         "build:esm:compat": "es-pack build -m esm-compat",
-        "test": "npm run test:verify && npm run test:node && npm run test:browser",
+        "test": "npm run test:verify && npm run test:main",
         "test:verify": "es-pack build -m umd esm esm-compat --verify",
-        "test:node": "echo WIP: es-pack test --node",
-        "test:browser": "echo WIP: es-pack test --browser",
+        "test:main": "es-pack test --node --browser",
         "dev": "es-pack build --dev"
     },
     "repository": {
@@ -33,6 +32,6 @@
     },
     "homepage": "https://github.com/w3reality/async-thread-worker",
     "devDependencies": {
-        "es-pack-js": "0.2.0-rc.4"
+        "es-pack-js": "0.3.0"
     }
 }

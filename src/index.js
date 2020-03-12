@@ -11,19 +11,27 @@ const __consoleLog = (...args) => {
 const __consoleVer = name => __consoleLog(`${name} ${__version}`);
 
 class ThreadWorker {
-    constructor(self, opts={}) {
+    constructor(self, opts={isNode: false}) {
         __consoleVer('AsyncThreadWorker.ThreadWorker');
 
-        // https://developer.mozilla.org/en-US/docs/Web/API/WorkerGlobalScope/self
+        this._isNode = opts.isNode;
+
         this._worker = self;
-        self.onmessage = e => this._onMessage(e);
+
+        if (this._isNode) {
+            const { parentPort } = global.require('worker_threads');
+            this._parentPort = parentPort;
+            parentPort.on('message', e => this._onMessage(e));
+        } else {
+            self.onmessage = e => this._onMessage(e.data);
+        }
 
         this.onCreate(opts);
     }
     onCreate(opts) {}
 
     _onMessage(e) {
-        const { id, data } = e.data;
+        const { id, data } = e;
         this.onRequest(id, data);
     }
 
@@ -37,7 +45,8 @@ class ThreadWorker {
         };
         const actual = Object.assign({}, defaults, opts);
         const error = actual.error;
-        this._worker.postMessage({
+        const api = this._isNode ? this._parentPort : this._worker;
+        api.postMessage({
             id: id,
             result: { data, error },
         }, actual.transferables.length > 0 ? actual.transferables : undefined);
@@ -51,31 +60,42 @@ class ThreadWorker {
 }
 
 class Thread {
-    constructor(path) {
+    constructor(path, opts={isNode: false, optsNode: undefined}) {
         __consoleVer('AsyncThreadWorker.Thread');
 
-        const _worker = new Worker(path);
+        this._isNode = opts.isNode;
+
+        let _worker;
+        if (this._isNode) {
+            // https://nodejs.org/api/worker_threads.html#worker_threads_new_worker_filename_options
+            const { Worker } = global.require('worker_threads');
+            _worker = new Worker(path, opts.optsNode);
+        } else {
+            _worker = new Worker(path);
+        }
+
         this._worker = _worker;
 
         this._rrRequest = {};
-        _worker.onmessage = (e) => {
-            if (0 && e.data.debug) {
-                console.log('debug:', e.data.debug);
-                return;
-            }
 
-            const { id, result } = e.data;
-            console.log('result for id:', id);
+        if (this._isNode) {
+            _worker.on('message', e => this._onMessage(e));
+        } else {
+            _worker.onmessage = e => this._onMessage(e.data);
+        }
+    }
+    _onMessage(e) {
+        const { id, result } = e;
+        console.log('result for id:', id);
 
-            const { data, error } = result;
-            if (id in this._rrRequest) {
-                const { res, rej } = this._rrRequest[id];
-                delete this._rrRequest[id];
-                error ? rej(error) : res(data);
-            } else {
-                console.log('nop; invalid request id:', id);
-            }
-        };
+        const { data, error } = result;
+        if (id in this._rrRequest) {
+            const { res, rej } = this._rrRequest[id];
+            delete this._rrRequest[id];
+            error ? rej(error) : res(data);
+        } else {
+            console.log('nop; invalid request id:', id);
+        }
     }
     _sendRequest(data, opts={}) {
         const defaults = {
@@ -120,6 +140,7 @@ class Thread {
     }
     terminate() {
         this._cancelPendingRequests();
+        // TODO node case -- https://nodejs.org/api/worker_threads.html#worker_threads_worker_terminate
         this._worker.terminate();
         this._worker = null;
     }
