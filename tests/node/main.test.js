@@ -2,9 +2,9 @@ const path = require('path');
 
 const libName = 'async-thread-worker';
 const outDir = path.join(__dirname, '../../target');
-const modPath = `${outDir}/${libName}.min.js`;
-// const modPath = `${outDir}/${libName}.js`; // dev
-const Mod = require(modPath);
+// const __modPath = `${outDir}/${libName}.min.js`;
+const __modPath = `${outDir}/${libName}.js`; // dev
+const Mod = require(__modPath);
 
 test('load', () => {
     expect(Mod.hasOwnProperty('Thread')).toBe(true);
@@ -19,12 +19,12 @@ if (process.version > 'v12.') {
     global.require = require;
 
     test('raw ping', async () => {
-        const contents = `
+        const content = `
 const { parentPort } = require('worker_threads');
 parentPort.once('message', msg => parentPort.postMessage({ pong: msg }));
         `;
         const { Worker } = require('worker_threads');
-        const wk = new Worker(contents, { eval: true });
+        const wk = new Worker(content, { eval: true });
         const ping = () => new Promise((res, rej) => {
             wk.on('message', msg => res(msg));
             wk.postMessage('ping');
@@ -39,10 +39,8 @@ parentPort.once('message', msg => parentPort.postMessage({ pong: msg }));
     //
 
     test('simple', async () => {
-        const contents = `
-const { parentPort } = require('worker_threads');
-Object.assign(global, { parentPort });
-const Mod = require('${modPath}');
+        const content = `
+const Mod = require('${__modPath}');
 
 class MyThreadWorker extends Mod.ThreadWorker {
     onRequest(id, payload) { // impl
@@ -50,11 +48,12 @@ class MyThreadWorker extends Mod.ThreadWorker {
         this.sendResponse(id, payload.toUpperCase());
     }
 }
+
 const _thw = new MyThreadWorker(this, { isNode: true });
 // throw [typeof _thw]; // debug
         `;
 
-        const th = new Mod.Thread(contents, {
+        const th = new Mod.Thread(content, {
             isNode: true,
             optsNode: { eval: true }, // https://nodejs.org/api/worker_threads.html#worker_threads_new_worker_filename_options
         });
@@ -68,6 +67,21 @@ const _thw = new MyThreadWorker(this, { isNode: true });
         th.terminate();
 
         expect(result.toString()).toBe('A,B,C,D');
+    });
+
+    //
+
+    test('api terminate()', async () => {
+        const content = `
+const Mod = require('${__modPath}');
+const _thw = new Mod.ThreadWorker(this, { isNode: true });
+        `;
+        const th = new Mod.Thread(content, {
+            isNode: true,
+            optsNode: { eval: true },
+        });
+        const exitCode = await th.terminate();
+        expect(exitCode).toBe(0);
     });
 
     //

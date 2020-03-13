@@ -140,9 +140,19 @@ class Thread {
     }
     terminate() {
         this._cancelPendingRequests();
-        // TODO node case -- https://nodejs.org/api/worker_threads.html#worker_threads_worker_terminate
-        this._worker.terminate();
+
+        let promise = null;
+        if (this._isNode) {
+            // https://nodejs.org/api/worker_threads.html#worker_threads_worker_terminate
+            promise = this._worker.terminate(); // "a Promise for the exit code"
+        } else {
+            // https://developer.mozilla.org/en-US/docs/Web/API/Worker/terminate
+            this._worker.terminate();
+        }
+
         this._worker = null;
+
+        return promise || undefined;
     }
 }
 

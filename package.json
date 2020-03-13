@@ -1,6 +1,6 @@
 {
     "name": "async-thread-worker",
-    "version": "0.9.3-dev.4",
+    "version": "0.9.3-dev.5",
     "description": "async/await abstraction for Web Workers",
     "main": "dist/async-thread-worker.min.js",
     "directories": {
