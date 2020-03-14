@@ -3,7 +3,7 @@ const path = require('path');
 const libName = 'async-thread-worker';
 const outDir = path.join(__dirname, '../../target');
 // const __modPath = `${outDir}/${libName}.min.js`;
-const __modPath = `${outDir}/${libName}.js`; // dev
+const __modPath = `${outDir}/${libName}.js`; // dev !!!!
 const Mod = require(__modPath);
 
 test('load', () => {
