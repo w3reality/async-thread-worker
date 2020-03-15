@@ -66,12 +66,12 @@ const _thw = new MyThreadWorker(this, { isNode: true });
         // !! Do call this BEFORE any `expect()`s, or the test could hang !!
         th.terminate();
 
-        expect(result.toString()).toBe('A,B,C,D');
+        expect(result.join('')).toBe('ABCD');
     });
 
     //
 
-    test('api terminate()', async () => {
+    test('api terminate() exit code', async () => {
         const content = `
 const Mod = require('${__modPath}');
 const _thw = new Mod.ThreadWorker(this, { isNode: true });
@@ -82,6 +82,29 @@ const _thw = new Mod.ThreadWorker(this, { isNode: true });
         });
         const exitCode = await th.terminate();
         expect(exitCode).toBe(0);
+    });
+
+    //
+
+    test('api terminate() canceled', async () => {
+        const content = `
+const Mod = require('${__modPath}');
+const _thw = new Mod.ThreadWorker(this, { isNode: true });
+        `;
+        const th = new Mod.Thread(content, {
+            isNode: true,
+            optsNode: { eval: true },
+        });
+
+        setTimeout(() => th.terminate(), 150);
+
+        let result;
+        try {
+            result = await th.sendRequest('ping');
+        } catch (err) {
+            result = err;
+        }
+        expect(result.startsWith('canceled:')).toBe(true);
     });
 
     //

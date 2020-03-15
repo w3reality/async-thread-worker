@@ -128,7 +128,7 @@ class Thread {
     _cancelPendingRequests() {
         let count = 0;
         Object.entries(this._rrRequest).forEach(([id, rr]) => {
-            rr.rej(`req[${id}] cenceled`);
+            rr.rej(`canceled: ${id}`);
             delete this._rrRequest[id];
             count += 1;
         });
