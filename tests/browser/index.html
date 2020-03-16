@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-type" content="text/html; charset=utf-8"/>
+    <title>tests</title>
+</head>
+<body>
+    <script id="worker" type="javascript/worker">
+        importScripts(`${baseUrl}/__atw.min.js`);
+        class MyThreadWorker extends AsyncThreadWorker.ThreadWorker {
+            onRequest(id, payload) { // impl
+                if (typeof payload === 'number') return; // ignore the request
+
+                this.sendResponse(id, payload.toUpperCase());
+            }
+        }
+        const _thw = new MyThreadWorker(self);
+    </script>
+
+    <script src="__atw.min.js"></script>
+    <script type="module">
+        const baseUrl = window.location.href.replace('/index.html', '');
+        const content = `const baseUrl = "${baseUrl}";\n`
+            + document.querySelector('#worker').textContent;
+
+        const objectUrl = window.URL.createObjectURL(
+            new Blob([content], {type: 'text/javascript'}));
+        const th = new AsyncThreadWorker.Thread(objectUrl);
+        window.URL.revokeObjectURL(objectUrl);
+
+        (async () => {
+            // test for 'simple'
+            const _result = [];
+            for (let payload of ['a', 'b', 'c', 'd']) {
+                _result.push(await th.sendRequest(payload));
+            }
+
+            // test for 'terminate'
+            setTimeout(() => th.terminate(), 50);
+            let ret;
+            try {
+                ret = await th.sendRequest(42); // will hang
+            } catch (err) {
+                ret = err;
+            }
+
+            // store results
+            window['output'] = {
+                baseUrl,
+                result: {
+                    simple: _result.join(''),
+                    terminate: ret,
+                },
+            };
+        })();
+    </script>
+</body>
+</html>

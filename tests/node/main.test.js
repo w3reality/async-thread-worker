@@ -96,7 +96,7 @@ const _thw = new Mod.ThreadWorker(this, { isNode: true });
             optsNode: { eval: true },
         });
 
-        setTimeout(() => th.terminate(), 150);
+        setTimeout(() => th.terminate(), 50);
 
         let result;
         try {
