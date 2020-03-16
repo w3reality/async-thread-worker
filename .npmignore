@@ -1,6 +1,6 @@
 examples/
 lib/
-test/
+target/
 webpack.config.js
 README.rst
 .babelrc
