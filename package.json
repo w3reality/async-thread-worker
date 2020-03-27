@@ -32,6 +32,6 @@
     },
     "homepage": "https://github.com/w3reality/async-thread-worker",
     "devDependencies": {
-        "es-pack-js": "0.3.2"
+        "es-pack-js": "0.3.3"
     }
 }
