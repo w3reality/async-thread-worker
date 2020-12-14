@@ -1,18 +1,13 @@
 // async-thread-worker - https://github.com/w3reality/async-thread-worker
 // async/await abstraction for Web Workers (MIT License)
 
-import { version as __version } from '../package.json';
-// const __version = 'n/a';
-
-const __consoleLog = (...args) => {
-    const _console = console;
-    _console.log.apply(_console, args);
-};
-const __consoleVer = name => __consoleLog(`${name} ${__version}`);
+import pkg from '../package.json';
+const __version = pkg.version;
 
 class ThreadWorker {
     constructor(self, opts={isNode: false}) {
-        __consoleVer('AsyncThreadWorker.ThreadWorker');
+
+        console.info(`AsyncThreadWorker.ThreadWorker ${__version}`);
 
         this._isNode = opts.isNode;
 
@@ -61,7 +56,7 @@ class ThreadWorker {
 
 class Thread {
     constructor(path, opts={isNode: false, optsNode: undefined}) {
-        __consoleVer('AsyncThreadWorker.Thread');
+        console.info(`AsyncThreadWorker.Thread ${__version}`);
 
         this._isNode = opts.isNode;
 
