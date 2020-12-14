@@ -1,6 +1,6 @@
 {
     "name": "async-thread-worker",
-    "version": "0.9.3",
+    "version": "0.9.4-dev.0",
     "description": "async/await abstraction for Web Workers",
     "main": "dist/async-thread-worker.min.js",
     "directories": {
@@ -32,6 +32,6 @@
     },
     "homepage": "https://github.com/w3reality/async-thread-worker",
     "devDependencies": {
-        "es-pack-js": "0.3.3"
+        "es-pack-js": "0.4.2"
     }
 }
