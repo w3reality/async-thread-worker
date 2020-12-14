@@ -3,6 +3,7 @@
   <p>
     <strong>An <code>async/await</code> abstraction for <a href="https://developer.mozilla.org/en-US/docs/Web/API/Worker">Web Workers</a></strong>
   </p>
+  <p>![](https://github.com/w3reality/async-thread-worker/workflows/Build%20and%20Run/badge.svg)</p>
 </div>
 
 ## About
