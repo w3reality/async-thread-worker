@@ -5,7 +5,16 @@
   </p>
 </div>
 
-![](https://github.com/w3reality/async-thread-worker/workflows/Build%20and%20Run/badge.svg)
+[![npm][npm-badge]][npm-url]
+[![MIT licensed][mit-badge]][mit-url]
+[![CI][actions-badge]][actions-url]
+
+[npm-badge]: https://img.shields.io/npm/v/async-thread-worker.svg
+[npm-url]: https://www.npmjs.com/package/async-thread-worker
+[mit-badge]: https://img.shields.io/badge/license-MIT-blue.svg
+[mit-url]: https://github.com/w3reality/async-thread-worker/blob/master/LICENSE
+[actions-badge]: https://github.com/w3reality/async-thread-worker/workflows/CI/badge.svg
+[actions-url]: https://github.com/w3reality/async-thread-worker/actions
 
 ## About
 
