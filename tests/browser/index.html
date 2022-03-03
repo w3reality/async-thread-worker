@@ -5,7 +5,7 @@
     <title>tests</title>
 </head>
 <body>
-    <script id="worker" type="javascript/worker">
+    <script id="simple" type="javascript/worker">
         importScripts(`${baseUrl}/__atw.min.js`);
         class MyThreadWorker extends AsyncThreadWorker.ThreadWorker {
             onRequest(id, payload) { // impl
@@ -16,40 +16,81 @@
         }
         const _thw = new MyThreadWorker(self);
     </script>
+    <script id="terminate" type="javascript/worker">
+        importScripts(`${baseUrl}/__atw.min.js`);
+        class MyThreadWorker extends AsyncThreadWorker.ThreadWorker {
+            onRequest(id, payload) { // impl
+                // ignore the request
+            }
+        }
+        const _thw = new MyThreadWorker(self);
+    </script>
+    <script id="onerror" type="javascript/worker">
+        importScripts(`${baseUrl}/__atw.min.js`);
+        class MyThreadWorker extends AsyncThreadWorker.ThreadWorker {
+            onRequest(id, payload) { // impl
+                if (payload === 2) throw 42;
+
+                this.sendResponse(id, payload + 100);
+            }
+        }
+        const _thw = new MyThreadWorker(self);
+    </script>
 
     <script src="__atw.min.js"></script>
     <script type="module">
-        const baseUrl = window.location.href.replace('/index.html', '');
-        const content = `const baseUrl = "${baseUrl}";\n`
-            + document.querySelector('#worker').textContent;
+        const createThread = (baseUrl, idScript) => {
+            const content = `const baseUrl = "${baseUrl}";\n`
+                + document.querySelector(idScript).textContent;
 
-        const objectUrl = window.URL.createObjectURL(
-            new Blob([content], {type: 'text/javascript'}));
-        const th = new AsyncThreadWorker.Thread(objectUrl);
-        window.URL.revokeObjectURL(objectUrl);
+            const objectUrl = window.URL.createObjectURL(
+                new Blob([content], {type: 'text/javascript'}));
+            const th = new AsyncThreadWorker.Thread(objectUrl);
+            window.URL.revokeObjectURL(objectUrl);
+
+            return th;
+        };
+
+        const baseUrl = window.location.href.replace('/index.html', '');
+        const thSimple = createThread(baseUrl, '#simple');
+        const thTerminate = createThread(baseUrl, '#terminate');
+        const thOnerror = createThread(baseUrl, '#onerror');
 
         (async () => {
-            // test for 'simple'
-            const _result = [];
+            // test 'simple'
+            const resSimple = [];
             for (let payload of ['a', 'b', 'c', 'd']) {
-                _result.push(await th.sendRequest(payload));
+                resSimple.push(await thSimple.sendRequest(payload));
+            }
+            thSimple.terminate();
+
+            // test 'terminate'
+            let resTerminate;
+            setTimeout(() => thTerminate.terminate(), 50);
+            try {
+                resTerminate = await thTerminate.sendRequest(42); // will hang
+            } catch (err) {
+                resTerminate = err;
             }
 
-            // test for 'terminate'
-            setTimeout(() => th.terminate(), 50);
-            let ret;
-            try {
-                ret = await th.sendRequest(42); // will hang
-            } catch (err) {
-                ret = err;
+            // test 'onerror'
+            const resOnerror = [];
+            for (let i = 0; i < 4; i++) {
+                try {
+                    resOnerror.push(await thOnerror.sendRequest(i));
+                } catch (err) { // `_cancelPendingRequests()` kicks in
+                    resOnerror.push(err);
+                    break;
+                }
             }
 
             // store results
             window['output'] = {
                 baseUrl,
-                result: {
-                    simple: _result.join(''),
-                    terminate: ret,
+                results: {
+                    simple: resSimple.join(''), // 'ABCD'
+                    terminate: resTerminate, // 'canceled:...'
+                    onerror: resOnerror.length, // 3
                 },
             };
         })();

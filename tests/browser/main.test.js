@@ -5,7 +5,7 @@ const { Server } = require('es-pack-js');
 const libName = 'async-thread-worker';
 const outDir = path.join(__dirname, '../../target');
 const modPath = `${outDir}/${libName}.min.js`;
-// const modPath = `${outDir}/${libName}.js`; // dev !!!!
+//const modPath = `${outDir}/${libName}.js`; // dev
 
 const tmpModPath = `${__dirname}/__atw.min.js`;
 
@@ -36,8 +36,8 @@ afterAll(async () => {
 
 test('output', () => {
     expect(typeof output).toBe('object');
-    expect(output.baseUrl.startsWith('http://')).toBe(true);
+    expect(output.baseUrl.startsWith('http://')).toBeTruthy();
 });
-test('simple', () => expect(output.result.simple).toBe('ABCD'));
-test('api terminate() canceled', () =>
-    expect(output.result.terminate.startsWith('canceled:')).toBe(true));
+test('simple', () => expect(output.results.simple).toBe('ABCD'));
+test('terminate', () => expect(output.results.terminate.startsWith('canceled:')).toBeTruthy());
+test('onerror', () => expect(output.results.onerror).toBe(3));

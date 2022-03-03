@@ -3,17 +3,16 @@ const path = require('path');
 const libName = 'async-thread-worker';
 const outDir = path.join(__dirname, '../../target');
 const __modPath = `${outDir}/${libName}.min.js`;
-// const __modPath = `${outDir}/${libName}.js`; // dev !!!!
+//const __modPath = `${outDir}/${libName}.js`; // dev
 const Mod = require(__modPath);
 
 test('load', () => {
-    expect(Mod.hasOwnProperty('Thread')).toBe(true);
-    expect(Mod.hasOwnProperty('ThreadWorker')).toBe(true);
+    expect(Mod.hasOwnProperty('Thread')).toBeTruthy();
+    expect(Mod.hasOwnProperty('ThreadWorker')).toBeTruthy();
 });
 
 // Skip if v10.x which requires `--experimental-worker` for 'worker_threads'
 if (process.version > 'v12.') {
-    const test00 = () => {}; // just for easy toggling on/off tests
 
     // kludge: make sure `global.require` inside `Mod` is available
     global.require = require;
@@ -104,13 +103,44 @@ const _thw = new Mod.ThreadWorker(this, { isNode: true });
         } catch (err) {
             result = err;
         }
-        expect(result.startsWith('canceled:')).toBe(true);
+        expect(result.startsWith('canceled:')).toBeTruthy();
     });
 
     //
 
-    test00('-', async () => {
-    });
-    test00('-', async () => {
+    test('_onError()', async () => {
+        const content = `
+const Mod = require('${__modPath}');
+
+class MyThreadWorker extends Mod.ThreadWorker {
+    onRequest(id, payload) { // impl
+        if (payload === 2) throw 42;
+
+        this.sendResponse(id, payload + 100);
+    }
+}
+
+const _thw = new MyThreadWorker(this, { isNode: true });
+        `;
+
+        const th = new Mod.Thread(content, {
+            isNode: true,
+            optsNode: { eval: true },
+        });
+
+        const results = [];
+        for (let i = 0; i < 4; i++) {
+            try {
+                results.push(await th.sendRequest(i));
+            } catch (err) { // `_cancelPendingRequests()` kicks in
+                results.push(err);
+                break;
+            }
+        }
+
+        expect(results.length).toBe(3);
+        expect(results[0]).toBe(100);
+        expect(results[1]).toBe(101);
+        expect(results[2].startsWith('canceled:')).toBeTruthy();
     });
 }

@@ -75,8 +75,10 @@ class Thread {
 
         if (this._isNode) {
             _worker.on('message', e => this._onMessage(e));
+            _worker.on('error', e => this._onError(e));
         } else {
             _worker.onmessage = e => this._onMessage(e.data);
+            _worker.onerror = e => this._onError(e.data);
         }
     }
     _onMessage(e) {
@@ -91,6 +93,10 @@ class Thread {
         } else {
             console.log('nop; invalid request id:', id);
         }
+    }
+    _onError(e) {
+        console.log('_onError(): e:', e);
+        this._cancelPendingRequests();
     }
     _sendRequest(data, opts={}) {
         const defaults = {
