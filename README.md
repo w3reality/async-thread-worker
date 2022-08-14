@@ -31,6 +31,7 @@ For other libraries that realize similar functionality, you might also consider:
 - [GoogleChromeLabs/comlink](https://github.com/GoogleChromeLabs/comlink)
 - [developit/greenlet](https://github.com/developit/greenlet)
 - [developit/workerize](https://github.com/developit/workerize)
+- [josdejong/workerpool](https://github.com/josdejong/workerpool)
 
 ## Getting Started
 
