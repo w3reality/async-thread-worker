@@ -10,6 +10,7 @@ const modPath = `${outDir}/${libName}.min.js`;
 const tmpModPath = `${__dirname}/__atw.min.js`;
 
 let output;
+let browser = null;
 
 let server = null;
 beforeAll(async () => {
@@ -18,6 +19,7 @@ beforeAll(async () => {
 
     fs.copySync(modPath, tmpModPath);
 
+    browser = await getBrowser();
     const page = await browser.newPage();
     await page.goto(`http://localhost:${server.port}/index.html`);
 
@@ -30,6 +32,7 @@ beforeAll(async () => {
     fs.removeSync(tmpModPath);
 });
 afterAll(async () => {
+    await browser.close();
     server.close();
     server = null;
 });
