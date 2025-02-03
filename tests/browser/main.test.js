@@ -1,6 +1,6 @@
 const path = require('path');
 const fs = require('fs-extra');
-const { Server } = require('es-pack-js');
+const { Server, getBrowser } = require('es-pack-js');
 
 const libName = 'async-thread-worker';
 const outDir = path.join(__dirname, '../../target');
@@ -9,10 +9,12 @@ const modPath = `${outDir}/${libName}.min.js`;
 
 const tmpModPath = `${__dirname}/__atw.min.js`;
 
+describe(`Test Suite: using ${modPath}`, () => {
+
 let output;
 let browser = null;
-
 let server = null;
+
 beforeAll(async () => {
     const serveDir = __dirname;
     server = await (new Server(serveDir)).listen();
@@ -31,6 +33,7 @@ beforeAll(async () => {
 
     fs.removeSync(tmpModPath);
 });
+
 afterAll(async () => {
     await browser.close();
     server.close();
@@ -44,3 +47,5 @@ test('output', () => {
 test('simple', () => expect(output.results.simple).toBe('ABCD'));
 test('terminate', () => expect(output.results.terminate.startsWith('canceled:')).toBeTruthy());
 test('onerror', () => expect(output.results.onerror).toBe(3));
+
+}); // end of `describe()`
