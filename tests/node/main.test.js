@@ -6,13 +6,12 @@ const __modPath = `${outDir}/${libName}.min.js`;
 //const __modPath = `${outDir}/${libName}.js`; // dev
 const Mod = require(__modPath);
 
-test('load', () => {
-    expect(Mod.hasOwnProperty('Thread')).toBeTruthy();
-    expect(Mod.hasOwnProperty('ThreadWorker')).toBeTruthy();
-});
+describe(`Test Suite: using ${__modPath}`, () => {
 
-// Skip if v10.x which requires `--experimental-worker` for 'worker_threads'
-if (process.version > 'v12.') {
+    test('load', () => {
+        expect(Mod.hasOwnProperty('Thread')).toBeTruthy();
+        expect(Mod.hasOwnProperty('ThreadWorker')).toBeTruthy();
+    });
 
     // kludge: make sure `global.require` inside `Mod` is available
     global.require = require;
@@ -143,4 +142,4 @@ const _thw = new MyThreadWorker(this, { isNode: true });
         expect(results[1]).toBe(101);
         expect(results[2].startsWith('canceled:')).toBeTruthy();
     });
-}
+}); // end of `describe()`
